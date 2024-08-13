@@ -11,7 +11,7 @@ import { User } from './user/user.entity';
 import { Cart } from './cart/cart.entity';
 import { CartItem } from './cart/cart-Item.entity';
 import { OrdersModule } from './orders/orders.module';
-import { CustomerOrders } from './orders/order.entity';
+import { CustomerOrders } from './orders/orders.entity';
 import { OrderItem } from './orders/orderitem.entity';
 
 
