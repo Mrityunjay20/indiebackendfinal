@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { OrderItem } from './OrderItem.entity';
-import { CustomerOrders } from './Order.entity';
+import { OrderItem } from './orderitem.entity';
+import { CustomerOrders } from './order.entity';
 import { User } from 'src/user/user.entity';
 import { Product } from 'src/shop/entities/product.entity';
 

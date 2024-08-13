@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { CustomerOrders } from './Order.entity';
+import { CustomerOrders } from './order.entity';
 
 @Entity()
 export class OrderItem {
