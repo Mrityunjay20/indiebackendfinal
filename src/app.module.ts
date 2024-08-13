@@ -11,8 +11,8 @@ import { User } from './user/user.entity';
 import { Cart } from './cart/cart.entity';
 import { CartItem } from './cart/cart-Item.entity';
 import { OrdersModule } from './orders/orders.module';
-import { CustomerOrders } from './orders/orders.entity';
-import { OrderItem } from './orders/orderitem.entity';
+import { CustomerOrders } from './orders/entities/orders.entity';
+import {OrderItem} from './orders/entities/orderitem.entity';
 
 
 @Module({
@@ -28,5 +28,6 @@ import { OrderItem } from './orders/orderitem.entity';
     entities: [Product, User, Cart, CartItem, CustomerOrders, OrderItem],
     synchronize: true  //only to use in development enviornment NEVER IN production
   }), CartModule, UserModule, AdminModule, OrdersModule],
+  exports: [TypeOrmModule],
 })
 export class AppModule {}
