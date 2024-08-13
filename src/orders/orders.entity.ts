@@ -12,7 +12,7 @@ export class CustomerOrders {
     @Column('json')
     orderInfo: Record<string, any>;
 
-    @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
+    @OneToMany(() => OrderItem, (item:OrderItem) => item.order, { cascade: true })
     items: OrderItem[];
 
     @Column('decimal', { precision: 10, scale: 2 })
