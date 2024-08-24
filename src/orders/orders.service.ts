@@ -63,27 +63,29 @@ export class OrdersService {
       (acc, product) => acc + product.totalPrice,
       0,
     );
-
-    const totalAmount: number = parseInt(
-      (finalAmount + finalAmount * 0.028).toFixed(0),
+    const taxPercentage = process.env.TAX_PERCENTAGE
+    const shipmentCharges = process.env.SHIPMENT_CHARGES
+    const totalAmountBeforeShipping: number = parseInt(
+      (finalAmount + finalAmount * parseFloat(taxPercentage)).toFixed(0),
     );
+    const totalAmountAfterShipping = items.length <= 2 ? totalAmountBeforeShipping + parseFloat(shipmentCharges) : totalAmountBeforeShipping
 
     // Create the order entity
     let razorpayOrderId: string | null = null;
-    if (OrderInfo.paymentMethod !== 'cashOnDelivery') {
+    const cashOnDeliveryCharges = process.env.CASH_ON_DELIVERY_CHARGES
       const razorpayOrder = await this.razorpay.orders.create({
-        amount: totalAmount * 100, // Amount in the smallest currency unit (e.g., paise for INR)
+        amount: OrderInfo.paymentMethod === 'cashOnDelivery' ? parseFloat(cashOnDeliveryCharges) * 100 : totalAmountAfterShipping * 100, // Amount in the smallest currency unit (e.g., paise for INR)
         currency: 'INR',
         receipt: `order_${Date.now()}`,
       });
       razorpayOrderId = razorpayOrder.id;
-    }
+    
 
     const order = this.orderRepository.create({
       firebaseUid,
       orderInfo: orderObject,
       items: allProducts,
-      totalAmount,
+      totalAmount:totalAmountAfterShipping,
       razorpayOrderId, // Store the Razorpay order ID or null
     });
 
