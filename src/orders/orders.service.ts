@@ -65,10 +65,11 @@ export class OrdersService {
     );
     const taxPercentage = process.env.TAX_PERCENTAGE
     const shipmentCharges = process.env.SHIPMENT_CHARGES
+    const noOfproducts = process.env.NO_OF_PRODUCTS
     const totalAmountBeforeShipping: number = parseInt(
       (finalAmount + finalAmount * parseFloat(taxPercentage)).toFixed(0),
     );
-    const totalAmountAfterShipping = items.length <= 2 ? totalAmountBeforeShipping + parseFloat(shipmentCharges) : totalAmountBeforeShipping
+    const totalAmountAfterShipping = items.length <= parseInt(noOfproducts) ? totalAmountBeforeShipping + parseFloat(shipmentCharges) : totalAmountBeforeShipping
 
     // Create the order entity
     let razorpayOrderId: string | null = null;
