@@ -1,5 +1,6 @@
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { ProductSize } from './product-size.entity'; // Import the ProductSize entity
 import { Transform } from 'class-transformer';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class Product {
@@ -18,38 +19,35 @@ export class Product {
   @Column({ length: 1000 })
   description: string;
 
-  @Column({ default: 'origin' ,length: 1200 })
+  @Column({ default: 'origin', length: 1200 })
   origin: string;
 
-  @Column({default: 'benefit' , length: 1200 })
+  @Column({ default: 'benefit', length: 1200 })
   benefits: string;
 
-  @Column({default: 'benefit', length: 1200 })
+  @Column({ default: 'benefit', length: 1200 })
   uses: string;
 
-  @Column({ default: 'ingredients',length: 1200 })
+  @Column({ default: 'ingredients', length: 1200 })
   ingredients: string;
 
-  @Column({default: 'safetyInformation', length: 1200 })
+  @Column({ default: 'safetyInformation', length: 1200 })
   safetyInformation: string;
 
-  @Column({default: 'www.google.com'})
+  @Column({ default: 'www.google.com' })
   video1: string;
 
-  @Column({default: 'www.google.com'})
+  @Column({ default: 'www.google.com' })
   video2: string;
-
-  @Column('decimal', { precision: 10, scale: 2 })
-  price: number;
-
-  @Column('decimal',{precision: 10, scale: 2,  nullable:true })
-  discountprice: number;
 
   @Column('json')
   imageUrl: string[];
 
   @Column()
   bannerUrl: string;
+
+  @OneToMany(() => ProductSize, (productSize) => productSize.product, { cascade: true })
+  sizes: ProductSize[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   @Transform(({ value }) => value.toISOString())
