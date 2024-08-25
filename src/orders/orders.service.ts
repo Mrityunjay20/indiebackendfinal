@@ -5,6 +5,7 @@ import {OrderItem} from './entities/orderitem.entity';
 import { CustomerOrders } from './entities/orders.entity';
 import { User } from 'src/user/user.entity';
 import { Product } from 'src/shop/entities/product.entity';
+import { ProductSize } from 'src/shop/entities/product-size.entity';
 
 const Razorpay = require('razorpay');
 @Injectable()
@@ -19,6 +20,8 @@ export class OrdersService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(ProductSize)
+    private readonly productSizeRepository: Repository<ProductSize>,
   ) {
     this.razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_API_KEY_ID,
@@ -42,25 +45,35 @@ export class OrdersService {
       OrderNotes: OrderInfo.orderNotes || null,
     };
 
-    // Fetch product information and calculate total price for each item
     const allProducts = await Promise.all(
-      items.map(async (product: any) => {
-        const productInfo = await this.productRepository.findOneBy({
-          id: product.productId,
+      items.map(async (item: any) => {
+        const productSizeInfo = await this.productSizeRepository.findOne({
+          where: {
+            product: { id: item.productId },
+            size: item.size,
+          },
         });
-        return {
-          productId: productInfo.id,
-          name: productInfo.name,
-          price: productInfo.discountprice,
-          quantity: product.quantity,
-          totalPrice: product.quantity * productInfo.discountprice,
-          imageUrl: product.imageUrl,
-        };
+
+        if (!productSizeInfo) {
+          throw new Error(`Product size not found for product ID ${item.productId} and size ${item.size}`);
+        }
+
+        const orderItem = this.orderItemRepository.create({
+          productId: productSizeInfo.product.id,
+          name: productSizeInfo.product.name,
+          size: productSizeInfo.size,
+          price: productSizeInfo.discountPrice,
+          quantity: item.quantity,
+          totalPrice: item.quantity * productSizeInfo.discountPrice,
+          imageUrl: productSizeInfo.product.imageUrl[0], // Assuming imageUrl is a string array in Product
+        });
+
+        return orderItem;
       }),
     );
 
     const finalAmount = allProducts.reduce(
-      (acc, product) => acc + product.totalPrice,
+      (acc, item) => acc + item.totalPrice,
       0,
     );
     const taxPercentage = process.env.TAX_PERCENTAGE
