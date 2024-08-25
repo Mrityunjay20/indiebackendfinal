@@ -71,6 +71,7 @@ export class OrdersService {
     );
     const totalAmountAfterShipping = items.length <= parseInt(noOfproducts) ? totalAmountBeforeShipping + parseFloat(shipmentCharges) : totalAmountBeforeShipping
 
+    
     // Create the order entity
     let razorpayOrderId: string | null = null;
     const cashOnDeliveryCharges = process.env.CASH_ON_DELIVERY_CHARGES
