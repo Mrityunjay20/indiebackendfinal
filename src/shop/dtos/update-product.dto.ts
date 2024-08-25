@@ -1,39 +1,63 @@
-import { IsArray, IsDecimal, IsNumber, IsOptional, isString, IsString } from 'class-validator';
+import { IsArray, IsDecimal, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class updateProductDto {
+class UpdateProductSizeDto {
+  @IsOptional()
+  @IsString()
+  size?: string;
+
+  @IsOptional()
+  @IsNumber()
+  price?: number;
+
+  @IsOptional()
+  @IsNumber()
+  discountPrice?: number;
+}
+
+export class UpdateProductDto {
+  @IsNumber()
+  id: number;
+
   @IsOptional()
   @IsString()
   name?: string;
 
-  @IsNumber()
-  id:number;
-
+  @IsOptional()
   @IsString()
-  category:string;
+  category?: string;
 
-    @IsString()
-    sku:string;
+  @IsOptional()
+  @IsString()
+  sku?: string;
 
-    @IsString()
-    origin:string;
-  
-    @IsString()
-    benefits:string;
-  
-    @IsString()
-    uses:string;
-  
-    @IsString()
-    ingredients:string;
-  
-    @IsString()
-    safetyInformation:string;
-  
-    @IsString()
-    video1:string;
-  
-    @IsString()
-    video2:string;
+  @IsOptional()
+  @IsString()
+  origin?: string;
+
+  @IsOptional()
+  @IsString()
+  benefits?: string;
+
+  @IsOptional()
+  @IsString()
+  uses?: string;
+
+  @IsOptional()
+  @IsString()
+  ingredients?: string;
+
+  @IsOptional()
+  @IsString()
+  safetyInformation?: string;
+
+  @IsOptional()
+  @IsString()
+  video1?: string;
+
+  @IsOptional()
+  @IsString()
+  video2?: string;
 
   @IsOptional()
   @IsString()
@@ -49,6 +73,13 @@ export class updateProductDto {
 
   @IsOptional()
   @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateProductSizeDto)
+  sizes?: UpdateProductSizeDto[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
   imageUrl?: string[];
 
   @IsOptional()
