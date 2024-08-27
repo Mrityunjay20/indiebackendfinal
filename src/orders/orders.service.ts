@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {OrderItem} from './entities/orderitem.entity';
@@ -10,6 +10,7 @@ import { ProductSize } from 'src/shop/entities/product-size.entity';
 const Razorpay = require('razorpay');
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
   private razorpay: any;
   constructor(
     @InjectRepository(CustomerOrders)
@@ -44,30 +45,46 @@ export class OrdersService {
       Email: OrderInfo.email,
       OrderNotes: OrderInfo.orderNotes || null,
     };
-
+  
+    this.logger.log(orderObject);
+  
     const allProducts = await Promise.all(
       items.map(async (item: any) => {
-        const productSizeInfo = await this.productSizeRepository.findOne({
-          where: {
-            product: { id: item.productId },
-            size: item.size,
-          },
+        this.logger.log(item);
+        
+        // Find the product by productId
+        const product = await this.productRepository.findOne({
+          where: { id: item.productId },
+          relations: ['sizes'], // Include the sizes relation
         });
-
-        if (!productSizeInfo) {
-          throw new Error(`Product size not found for product ID ${item.productId} and size ${item.size}`);
+  
+        if (!product) {
+          throw new Error(`Product not found for ID ${item.productId}`);
         }
-
+  
+        // Find the size object within the sizes array that matches the item.size
+        const productSizeInfo = product.sizes.find(
+          (size) => size.size === item.size
+        );
+  
+        if (!productSizeInfo) {
+          throw new Error(
+            `Product size not found for product ID ${item.productId} and size ${item.size}`
+          );
+        }
+  
+        this.logger.log("product", productSizeInfo.product);
+  
         const orderItem = this.orderItemRepository.create({
-          productId: productSizeInfo.product.id,
-          name: productSizeInfo.product.name,
+          productId: product.id,
+          name: product.name,
           size: productSizeInfo.size,
           price: productSizeInfo.discountPrice,
           quantity: item.quantity,
           totalPrice: item.quantity * productSizeInfo.discountPrice,
-          imageUrl: productSizeInfo.product.imageUrl[0], // Assuming imageUrl is a string array in Product
+          imageUrl: product.imageUrl[0], // Assuming imageUrl is a string array in Product
         });
-
+  
         return orderItem;
       }),
     );
@@ -93,6 +110,7 @@ export class OrdersService {
         currency: 'INR',
         receipt: `order_${Date.now()}`,
       });
+      console.log(razorpayOrder)
       razorpayOrderId = razorpayOrder.id;
     
 
