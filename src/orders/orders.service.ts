@@ -129,7 +129,7 @@ export class OrdersService {
 
 
   async fetchOrders(objectinput: any) {
-    // firebaseUid1.toString().trim(); // Remove any extra spaces
+    // firebaseUid1.toString().trim();
     const orders = await this.orderRepository.find({
       where: { firebaseUid: objectinput.firebaseUid, paymentStatus: "confirmed" },
       relations: ['items'],
