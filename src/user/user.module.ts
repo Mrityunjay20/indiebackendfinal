@@ -10,6 +10,6 @@ import { CartModule } from 'src/cart/cart.module';
   imports: [TypeOrmModule.forFeature([User]), CartModule], // Make sure User entity is included here
   providers: [UserService],
   controllers: [UserController],
-  exports: [UserService], // Export UserService if used elsewhere
+  exports: [UserService],
 })
 export class UserModule {}
