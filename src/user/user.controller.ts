@@ -32,6 +32,4 @@ export class UserController {
       throw new ExceptionsHandler;
     }
   }
-
-  // Other controller methods (e.g., login) can go here
 }
