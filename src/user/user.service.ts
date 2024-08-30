@@ -38,5 +38,5 @@ export class UserService {
     return false;
   }
 
-  // Other service methods (e.g., findOne, findAll) can go here
+  
 }
