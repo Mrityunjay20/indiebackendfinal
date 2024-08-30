@@ -1,76 +1,73 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { updateProductDto } from '../dtos/update-product.dto';
+import { UpdateProductDto } from '../dtos/update-product.dto';
+import { CreateProductDto } from '../dtos/create-product.dto';
 import { Product } from '../entities/product.entity';
+import { ProductSize } from '../entities/product-size.entity';
 
 @Injectable()
 export class ShopService {
   private readonly logger = new Logger(ShopService.name);
+
   constructor(
     @InjectRepository(Product)
-    private productRepository: Repository<Product>,
+    private readonly productRepository: Repository<Product>,
+
+    @InjectRepository(ProductSize)
+    private readonly productSizeRepository: Repository<ProductSize>,
   ) {}
 
-  async fetchproducts() {
-    return await this.productRepository.find();
+  async fetchProducts() {
+    return await this.productRepository.find({ relations: ['sizes'] });
   }
 
   async fetchOneProduct(id: number) {
-    const product = await this.productRepository.findOneBy({ id });
+    const product = await this.productRepository.findOne({ where: { id }, relations: ['sizes'] });
     if (!product) {
       throw new NotFoundException(`Product not found with id ${id}`);
     }
     return product;
   }
 
-  async createProduct(
-    name: string,
-    description: string,
-    category:string,
-    sku: string,
-    origin: string,
-    benefits: string,
-    uses: string,
-    ingredients: string,
-    safetyInformation: string,
-    video1: string,
-    video2: string,
-    price: number,
-    discountprice:number,
-    imageUrl: string[],
-    bannerUrl: string,
-  ): Promise<Product> {
-    const product = this.productRepository.create({
-      name,
-      description,
-      category,
-      sku,
-      origin,
-      benefits,
-      uses,
-      ingredients,
-      safetyInformation,
-      video1,
-      video2,
-      price,
-      discountprice,
-      imageUrl,
-      bannerUrl,
-    });
+  async createProduct(createProductDto: CreateProductDto): Promise<Product> {
+    const { sizes, ...productData } = createProductDto;
 
-    return await this.productRepository.save(product);
+    const product = this.productRepository.create(productData);
+    await this.productRepository.save(product);
+
+    if (sizes && sizes.length > 0) {
+      const productSizes = sizes.map(size => this.productSizeRepository.create({ ...size, product }));
+      await this.productSizeRepository.save(productSizes);
+    }
+
+    return product;
   }
 
-  async updateProduct(id: number, updateData: Partial<Product>) {
-    const product = await this.productRepository.findOneBy({ id });
+  async updateProduct(id: number, updateProductDto: UpdateProductDto) {
+    const product = await this.productRepository.findOne({ where: { id }, relations: ['sizes'] });
     if (!product) {
       throw new NotFoundException('Product not found');
     }
+
+    const { sizes, ...updateData } = updateProductDto;
+
+    // Update the product entity
     Object.assign(product, updateData);
+    await this.productRepository.save(product);
+
+    // Handle sizes if provided
+    if (sizes) {
+      // Delete existing sizes if they are being updated
+      await this.productSizeRepository.delete({ product: { id } });
+
+      // Create new sizes and associate them with the product
+      const newSizes = sizes.map(size => this.productSizeRepository.create({ ...size, product }));
+      await this.productSizeRepository.save(newSizes);
+    }
+
     this.logger.log(`Updating product: ${JSON.stringify(product)}`);
-    return this.productRepository.save(product);
+    return this.fetchOneProduct(id);
   }
 
   async deleteProduct(id: number) {
@@ -79,6 +76,9 @@ export class ShopService {
     if (!product) {
       throw new NotFoundException('Product not found');
     }
+
+    // Delete associated sizes first
+    await this.productSizeRepository.delete({ product: { id } });
 
     // Perform the deletion by specifying the exact ID
     const deleteResult = await this.productRepository.delete(id);

@@ -10,6 +10,7 @@ export class OrdersController {
     @Post('createorder')
     async createOrder(@Body() order: OrderDto){
         return await this.OrderRepository.createOrder(order.firebaseUid, order.items, order.OrderInfo);
+        
     }
 
     @Post('confirmPayment')

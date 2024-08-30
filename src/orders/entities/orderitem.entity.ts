@@ -6,7 +6,7 @@ export class OrderItem {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => CustomerOrders, (order:CustomerOrders) => order.items)
+    @ManyToOne(() => CustomerOrders, (order) => order.items)
     order: CustomerOrders;
 
     @Column()
@@ -14,6 +14,9 @@ export class OrderItem {
 
     @Column()
     name: string;
+
+    @Column()
+    size: string;
 
     @Column('decimal', { precision: 10, scale: 2 })
     price: number;
@@ -24,6 +27,6 @@ export class OrderItem {
     @Column('decimal', { precision: 10, scale: 2 })
     totalPrice: number;
 
-    @Column({default:""})
+    @Column('json', { nullable: true }) // Use JSON for arrays or complex data
     imageUrl: string;
 }

@@ -13,6 +13,7 @@ import { CartItem } from './cart/cart-Item.entity';
 import { OrdersModule } from './orders/orders.module';
 import { CustomerOrders } from './orders/entities/orders.entity';
 import {OrderItem} from './orders/entities/orderitem.entity';
+import { ProductSize } from './shop/entities/product-size.entity';
 
 
 @Module({
@@ -23,9 +24,9 @@ import {OrderItem} from './orders/entities/orderitem.entity';
     host: 'localhost',
     port: 3306,
     username: 'root',
-    password: 'mrityunjaymanas',
-    database: 'testdb',
-    entities: [Product, User, Cart, CartItem, CustomerOrders, OrderItem],
+    password: 'Leobarca@10',
+    database: 'testDb',
+    entities: [Product, User, Cart, CartItem, CustomerOrders, OrderItem,ProductSize],
     synchronize: true  //only to use in development enviornment NEVER IN production
   }), CartModule, UserModule, AdminModule, OrdersModule],
   exports: [TypeOrmModule],
