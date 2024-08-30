@@ -114,9 +114,7 @@ export class OrdersService {
     const { razorpayOrderId, razorpayPaymentId, razorpaySignature } =
       paymentDetails;
 
-    // Implement your payment verification logic here
-
-    // Example: Find the order by razorpayOrderId and update payment status
+  
     const order = await this.orderRepository.findOneBy({ razorpayOrderId });
 
     if (!order) {
