@@ -27,6 +27,6 @@ export class OrderItem {
     @Column('decimal', { precision: 10, scale: 2 })
     totalPrice: number;
 
-    @Column('json', { nullable: true }) // Use JSON for arrays or complex data
+    @Column('json', { nullable: true }) 
     imageUrl: string;
 }
