@@ -45,30 +45,56 @@ export class ShopService {
   }
 
   async updateProduct(id: number, updateProductDto: UpdateProductDto) {
-    const product = await this.productRepository.findOne({ where: { id }, relations: ['sizes'] });
+    // Fetch the product with existing sizes
+    const product = await this.productRepository.findOne({
+      where: { id },
+      relations: ['sizes'],
+    });
+  
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-
+  
     const { sizes, ...updateData } = updateProductDto;
-
+  
     // Update the product entity
     Object.assign(product, updateData);
     await this.productRepository.save(product);
-
-    // Handle sizes if provided
+  
     if (sizes) {
-      // Delete existing sizes if they are being updated
-      await this.productSizeRepository.delete({ product: { id } });
-
-      // Create new sizes and associate them with the product
-      const newSizes = sizes.map(size => this.productSizeRepository.create({ ...size, product }));
-      await this.productSizeRepository.save(newSizes);
+      // Create a map of existing sizes for quick lookup
+      const existingSizesMap = new Map(product.sizes.map(size => [size.size, size.id]));
+  
+      // Update existing sizes and create new sizes
+      const updatedSizeIds = new Set<number>();
+  
+      for (const size of sizes) {
+        if (existingSizesMap.has(size.size)) {
+          // Update existing size
+          await this.productSizeRepository.update(existingSizesMap.get(size.size), size);
+          updatedSizeIds.add(existingSizesMap.get(size.size));
+        } else {
+          // Create new size
+          const newSize = this.productSizeRepository.create({ ...size, product });
+          await this.productSizeRepository.save(newSize);
+          updatedSizeIds.add(newSize.id);
+        }
+      }
+  
+      // Delete sizes that were not updated or created
+      const sizesToDelete = product.sizes
+        .filter(existingSize => !updatedSizeIds.has(existingSize.id))
+        .map(existingSize => existingSize.id);
+  
+      if (sizesToDelete.length > 0) {
+        await this.productSizeRepository.delete(sizesToDelete);
+      }
     }
-
+  
     this.logger.log(`Updating product: ${JSON.stringify(product)}`);
     return this.fetchOneProduct(id);
   }
+  
 
   async deleteProduct(id: number) {
     // Find the product to ensure it exists
